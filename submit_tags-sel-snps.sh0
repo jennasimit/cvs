@@ -1,0 +1,49 @@
+#!/bin/bash
+## sbatch --array 1-4 submit_tags-sel-snps.sh0 0.99 0.01
+
+#SBATCH -J rubyjob
+
+#SBATCH -A MRC-BSU-SL2
+
+#SBATCH --nodes 1
+
+#SBATCH --ntasks 1
+
+#SBATCH --time 5:00:00
+
+##SBATCH --mail-type FAIL
+
+#SBATCH -p mrc-bsu-sand
+
+#SBATCH --output=submit-ACDE.err
+
+. /etc/profile.d/modules.sh # Leave this line (enables the module command)
+
+module purge                # Removes all modules still loaded
+
+module load default-impi    # REQUIRED - loads the basic environment
+
+module load gcc/5.3.0
+module load R/3.3.0 # latest R
+
+
+export I_MPI_PIN_ORDER=scatter # Adjacent domains have minimal sharing of caches/sockets
+
+JOBID=$SLURM_JOB_ID
+
+echo -e "JobID: $JOBID
+
+echo "Time: `date`
+
+echo "Running on master node: `hostname`
+
+echo "Current directory: `pwd`
+
+r2=$1
+mppthr=$2
+tk=$SLURM_ARRAY_TASK_ID
+
+srun -n1 Rscript /home/ja628/scratch/scripts/IL2RA_general_scripts/multi-trait/tags-sel-snps.R $r2 $mppthr $tk 
+
+wait
+
